@@ -6,9 +6,12 @@ const tip = document.querySelector('#tip');
 const list = document.querySelector('#book-list');
 const searchInput = document.querySelector('#search-input');
 
-let books = [];
+// 恢复：首次访问 localStorage.getItem 返回 null，用 || '[]' 兜底得空数组
+let books = JSON.parse(localStorage.getItem('books') || '[]');
 let keyword = '';
 let editingId = null;
+
+const save = () => localStorage.setItem('books', JSON.stringify(books));
 
 const render = () => {
   list.innerHTML = '';
@@ -53,6 +56,7 @@ const render = () => {
         book.rating = nr;
         editingId = null;
         tip.textContent = '';
+        save();
         render();
       };
       const cancelBtn = document.createElement('button');
@@ -94,6 +98,7 @@ const render = () => {
         const idx = books.findIndex(b => b.id === book.id);
         if (idx !== -1) {
           books.splice(idx, 1);
+          save();
           render();
         }
       };
@@ -120,6 +125,7 @@ form.addEventListener('submit', (e) => {
     return;
   }
   books.push({ id: Date.now(), title, author, rating });
+  save();
   tip.textContent = '';
   titleInput.value = '';
   authorInput.value = '';
