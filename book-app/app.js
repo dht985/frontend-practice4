@@ -21,63 +21,56 @@ const render = () => {
     return b.title.toLowerCase().includes(kw) || b.author.toLowerCase().includes(kw);
   });
   if (shown.length === 0) {
-    const li = document.createElement('li');
-    li.textContent = books.length === 0 ? '暂无图书' : '没有匹配的图书';
-    list.appendChild(li);
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td colspan="4">${books.length === 0 ? '暂无图书' : '没有匹配的图书'}</td>`;
+    list.appendChild(tr);
     return;
   }
   shown.forEach(book => {
-    const li = document.createElement('li');
-    // data-id 用字符串存储，比较时统一用 String() 转换
-    li.dataset.id = book.id;
+    const tr = document.createElement('tr');
+    // data-id 用字符串存储，比较时统一用 Number() 转换
+    tr.dataset.id = book.id;
     if (editingId === book.id) {
-      // 编辑模式：行内输入框，预填原值；按钮带 data-action 供父级委托识别
-      li.className = 'edit-row';
-      li.innerHTML = `
-        <input type="text" class="edit-title" value="${book.title}">
-        <input type="text" class="edit-author" value="${book.author}">
-        <input type="number" class="edit-rating" min="1" max="5" value="${book.rating}">
-        <button data-action="save">保存</button>
-        <button data-action="cancel">取消</button>
+      // 编辑模式：输入框放 td，预填原值；按钮带 data-action 供父级委托识别
+      tr.className = 'edit-row';
+      tr.innerHTML = `
+        <td><input type="text" class="edit-title" value="${book.title}"></td>
+        <td><input type="text" class="edit-author" value="${book.author}"></td>
+        <td><input type="number" class="edit-rating" min="1" max="5" value="${book.rating}"></td>
+        <td><button data-action="save">保存</button> <button data-action="cancel">取消</button></td>
       `;
     } else {
-      // 浏览模式：信息 + 操作按钮（无 onclick，靠父级 ul 委托）
-      const info = document.createElement('span');
-      info.className = 'info';
-      info.textContent = book.title;
-      const meta = document.createElement('span');
-      meta.className = 'meta';
-      meta.textContent = ` — ${book.author} `;
-      const stars = document.createElement('span');
-      stars.className = 'stars';
-      stars.textContent = '★'.repeat(book.rating);
-      info.appendChild(meta);
-      info.appendChild(stars);
-      const ops = document.createElement('span');
-      ops.className = 'ops';
+      // 浏览模式：书名/作者/评分/操作 分列展示，文本可被鼠标拖选复制
+      const tdTitle = document.createElement('td');
+      tdTitle.textContent = book.title;
+      const tdAuthor = document.createElement('td');
+      tdAuthor.textContent = book.author;
+      const tdRating = document.createElement('td');
+      tdRating.className = 'stars';
+      tdRating.textContent = '★'.repeat(book.rating);
+      const tdOps = document.createElement('td');
+      tdOps.className = 'ops';
       const editBtn = document.createElement('button');
       editBtn.textContent = '编辑';
       editBtn.dataset.action = 'edit';
       const delBtn = document.createElement('button');
       delBtn.textContent = '删除';
       delBtn.dataset.action = 'delete';
-      ops.appendChild(editBtn);
-      ops.appendChild(delBtn);
-      li.appendChild(info);
-      li.appendChild(ops);
+      tdOps.append(editBtn, delBtn);
+      tr.append(tdTitle, tdAuthor, tdRating, tdOps);
     }
-    list.appendChild(li);
+    list.appendChild(tr);
   });
 };
 
-// 事件委托：ul 上单个 click 监听器，靠 data-action 分发
-// 原理：click 冒泡到 ul，用 e.target.closest('button') 定位按钮，读 dataset.action 决定动作
+// 事件委托：tbody 上单个 click 监听器，靠 data-action 分发
+// 原理：click 冒泡到 tbody，用 e.target.closest('button') 定位按钮，读 dataset.action 决定动作
 list.addEventListener('click', (e) => {
   const btn = e.target.closest('button');
-  if (!btn) return;                       // 点到 li 空白处或文本，忽略
+  if (!btn) return;                       // 点到 td 文本或行空白处，忽略
   const action = btn.dataset.action;
-  const li = btn.closest('li');
-  const id = Number(li.dataset.id);       // dataset 存字符串，转回数字与 book.id 对齐
+  const tr = btn.closest('tr');
+  const id = Number(tr.dataset.id);       // dataset 存字符串，转回数字与 book.id 对齐
   const book = books.find(b => b.id === id);
   if (!book) return;
 
@@ -92,10 +85,10 @@ list.addEventListener('click', (e) => {
       render();
     }
   } else if (action === 'save') {
-    // 编辑模式下输入框是 li 的子元素，按 class 查询取值
-    const t = li.querySelector('.edit-title');
-    const a = li.querySelector('.edit-author');
-    const r = li.querySelector('.edit-rating');
+    // 编辑模式下输入框是 td 的子元素，按 class 查询取值
+    const t = tr.querySelector('.edit-title');
+    const a = tr.querySelector('.edit-author');
+    const r = tr.querySelector('.edit-rating');
     const nt = t.value.trim();
     const na = a.value.trim();
     const nr = Number(r.value);

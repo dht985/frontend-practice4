@@ -12,13 +12,13 @@
     #add-form input { flex: 1; min-width: 80px; }
     #add-form input#rating-input { flex: 0 0 90px; }
     .tip { color: #c00; font-size: 14px; min-height: 20px; margin: 8px 0; }
-    ul { list-style: none; padding: 0; }
-    li { padding: 8px 0; border-bottom: 1px solid #eee; display: flex; align-items: center; gap: 8px; }
-    .info { flex: 1; }
-    .meta { color: #666; font-size: 14px; }
+    /* 原生 table 文本可被鼠标拖选复制，满足可复制状态 */
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 8px; border-bottom: 1px solid #eee; text-align: left; -webkit-user-select: text; user-select: text; }
+    th { background: #f5f5f5; }
     .stars { color: #e90; }
-    .ops button { margin-left: 4px; }
-    .edit-row input { font-size: 14px; padding: 4px; }
+    .ops button { margin-right: 4px; }
+    .edit-row input { font-size: 14px; padding: 4px; width: 100%; }
   </style>
 </head>
 <body>
@@ -31,7 +31,12 @@
   </form>
   <p class="tip" id="tip"></p>
   <input type="text" id="search-input" placeholder="搜索书名或作者..." style="width:100%; margin-bottom:8px; padding:6px;">
-  <ul id="book-list"></ul>
+  <table id="book-table">
+    <thead>
+      <tr><th>书名</th><th>作者</th><th>评分</th><th>操作</th></tr>
+    </thead>
+    <tbody id="book-list"></tbody>
+  </table>
   <script src="app.js"></script>
 </body>
 </html>
